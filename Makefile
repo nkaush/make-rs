@@ -11,10 +11,3 @@ debug:
 clean:
 	cargo clean
 	rm make-rs
-
-a: b c
-
-b: a
-
-c:
-	echo hi

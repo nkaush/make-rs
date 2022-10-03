@@ -1,4 +1,7 @@
-use crate::{MakeError, ResourceDependencyGraph, Rule};
+mod dependency_graph;
+pub use dependency_graph::*;
+
+use crate::{MakeError, Rule};
 use std::io::{BufReader, BufRead};
 use std::path::{Path, PathBuf};
 use std::fs::File;
@@ -30,16 +33,16 @@ fn is_makefile_target(s: &str) -> bool {
 }
 
 impl MakefileParser {
-    pub fn new(makefile: PathBuf) -> Result<Self, MakeError> {
+    pub fn new(makefile: &PathBuf) -> Result<Self, MakeError> {
         if Path::new(&makefile).exists() {
-            Ok(Self { makefile: makefile })
+            Ok(Self { makefile: makefile.into() })
         } else {
             Err(MakeError::MakefileDoesNotExist)
         }
     }
 
-    pub fn parse(&mut self, goals: &mut Vec<String>) -> Result<ResourceDependencyGraph, MakeError> {
-        let mut rdg: ResourceDependencyGraph = Default::default();
+    pub fn parse(&mut self, goals: &mut Vec<String>) -> Result<DependencyGraph, MakeError> {
+        let mut rdg: DependencyGraph = Default::default();
         rdg.add_rule("".into()); // Set the sentinel rule
 
         let rdr = match File::open(&self.makefile) {

@@ -12,7 +12,7 @@ pub struct Arguments {
 
     /// Change to DIRECTORY before doing anything.
     #[arg(short = 'C', long)]
-    pub directory: Option<String>,
+    pub directory: Option<PathBuf>,
 
     /// Allow JOBS jobs at once; infinite jobs with no arg.
     #[arg(short, long, default_value_t = 1)]
@@ -32,4 +32,20 @@ pub struct Arguments {
 
     /// A list of rules to make
     pub rules: Vec<String>
+}
+
+pub struct MakeConfiguration {
+    pub silent: bool,
+    pub always_make: bool,
+    pub dry_run: bool
+}
+
+impl Arguments {
+    pub fn get_configuration(&self) -> MakeConfiguration {
+        MakeConfiguration { 
+            silent: self.silent, 
+            always_make: self.always_make, 
+            dry_run: self.dry_run
+        }
+    }
 }

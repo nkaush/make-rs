@@ -2,12 +2,12 @@ use std::collections::HashMap;
 use crate::Rule;
 
 #[derive(Default)]
-pub struct ResourceDependencyGraph {
+pub struct DependencyGraph {
     rules: HashMap<String, Rule>,
     dependencies: HashMap<String, Vec<String>>
 }
 
-impl ResourceDependencyGraph {
+impl DependencyGraph {
     pub fn new() -> Self {
         Default::default()
     }

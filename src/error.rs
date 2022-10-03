@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use std::error::Error;
 use std::fmt;
 
@@ -8,7 +9,8 @@ pub enum MakeError {
     RecipeBeforeTarget,
     MissingSeparator(usize),
     NoTargets,
-    NoRuleToMakeTarget
+    NoRuleToMakeTarget,
+    NoSuchFileOrDirectory(PathBuf)
 }
 
 impl fmt::Display for MakeError {
