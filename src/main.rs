@@ -1,19 +1,36 @@
-use make_rs::{Arguments, MakeError, MakefileParser, ParseError, Rule};
+use make_rs::{Arguments, MakeError, MakefileParser, Rule, ResourceDependencyGraph};
+use petgraph::{Graph, algo::is_cyclic_directed};
 use std::{env, process, thread};
+use std::sync::{Arc, Mutex};
+use std::cmp::{max, min};
 use tsq::ThreadSafeQueue;
-use std::error::Error;
-use std::sync::Arc;
-use std::cmp::min;
 use clap::Parser;
 
-fn make() -> Result<(), impl Error + MakeError> {
-    let args: Arguments = Arguments::parse();    
+type RuleQueue = ThreadSafeQueue<Option<Rule>>;
+
+fn make_worker(rdg: Arc<Mutex<ResourceDependencyGraph>>, q: Arc<RuleQueue>) {
+    
+}
+
+pub fn make() -> Result<(), MakeError> {
+    let mut args: Arguments = Arguments::parse();    
     let mut parser = MakefileParser::new(args.file)?;
-    let rdg = parser.parse();
+    let rdg = parser.parse(&mut args.rules)?;
 
-    let queue: Arc<ThreadSafeQueue<Rule>>;
+    let max_degree = rdg.max_rule_degree();
+    let num_threads: usize = min(max_degree, max(1, args.jobs.into()));
 
-    Ok::<(), ParseError>(())
+    let queue: Arc<RuleQueue> = Arc::new(ThreadSafeQueue::new());
+    let rdg: Arc<Mutex<ResourceDependencyGraph>> = Arc::new(Mutex::new(rdg));
+    (0..num_threads)
+        .map(|_| {
+            let qc: Arc<RuleQueue> = Arc::clone(&queue);
+            let rdgc = Arc::clone(&rdg);
+            thread::spawn(move || make_worker(rdgc, qc))
+        })
+        .for_each(|h| h.join().unwrap());
+
+    Ok(())
 }
 
 fn main() {

@@ -10,9 +10,9 @@ pub struct Rule {
 }
 
 impl Rule {
-    pub fn new(target: String) -> Self {
+    pub fn new(target: &str) -> Self {
         Self {
-            target,
+            target: target.into(),
             commands: Vec::new(),
             rule_state: RuleState::NotStarted
         }
@@ -20,5 +20,17 @@ impl Rule {
 
     pub fn add_command(&mut self, command: String) {
         self.commands.push(command);
+    }
+
+    pub fn reset(&mut self) {
+        self.commands.clear();
+    }
+
+    pub fn get_target(&self) -> &String {
+        &self.target
+    }
+
+    pub fn get_commands(&self) -> &Vec<String> {
+        &self.commands
     }
 }
