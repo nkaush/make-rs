@@ -6,7 +6,7 @@ pub enum MakeError {
     MakefileDoesNotExist,
     MakefileParseError,
     RecipeBeforeTarget,
-    MissingSeparator,
+    MissingSeparator(usize),
     NoTargets,
     NoRuleToMakeTarget
 }
@@ -18,12 +18,12 @@ impl fmt::Display for MakeError {
 }
 
 impl MakeError {
-    pub fn reason(&self) -> &str {
-        todo!()
+    pub fn reason(&self) -> String {
+        format!("{:?}", self)
     }
 
     pub fn exit_code(&self) -> i32 {
-        todo!()
+        2
     }
 }
 

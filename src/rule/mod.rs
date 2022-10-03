@@ -1,5 +1,4 @@
 mod state;
-
 pub use state::*;
 
 #[derive(Default)]
@@ -18,12 +17,12 @@ impl Rule {
         }
     }
 
-    pub fn add_command(&mut self, command: String) {
-        self.commands.push(command);
-    }
-
     pub fn reset(&mut self) {
         self.commands.clear();
+    }
+
+    pub fn add_command(&mut self, command: String) {
+        self.commands.push(command);
     }
 
     pub fn get_target(&self) -> &String {
@@ -32,5 +31,13 @@ impl Rule {
 
     pub fn get_commands(&self) -> &Vec<String> {
         &self.commands
+    }
+
+    pub fn get_state(&self) -> RuleState {
+        self.rule_state
+    }
+
+    pub fn set_state(&mut self, new_state: RuleState) {
+        self.rule_state = new_state;
     }
 }

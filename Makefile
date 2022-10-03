@@ -1,14 +1,12 @@
-EXE_DIR=.
-
 sentinel: debug
 
 release:
 	cargo build --release
-	mv target/release/make-rs $(EXE_DIR)
+	mv target/release/make-rs .
 
 debug:
 	cargo build
-	mv target/debug/make-rs $(EXE_DIR)
+	mv target/debug/make-rs .
 
 clean:
 	cargo clean

@@ -52,17 +52,17 @@ impl MakefileParser {
         let mut in_command_block: bool = false;
 
         for (line_num, l) in rdr.lines().enumerate() {
-            let mut line = match l {
-                Ok(l) => l.trim().to_string(),
+            let (mut line, untrimmed) = match l {
+                Ok(l) => (l.trim().to_string(), l),
                 Err(_) => return Err(MakeError::MakefileParseError)
             };
 
             strip_comments(&mut line);
-            if line.is_empty() {
+            if line.is_empty() { // Skip empty lines
                 continue;
             }
 
-            if line.starts_with('\t') { // This is a reciple line
+            if untrimmed.starts_with('\t') { // This is a reciple line
                 let rule = match current_rule.as_mut() {
                     None => return Err(MakeError::RecipeBeforeTarget),
                     Some(r) => r
@@ -83,14 +83,13 @@ impl MakefileParser {
                     //         curr_rule->target);
                     rule.reset();
                 }
-
                 in_command_block = true;
                 rule.add_command(line);
-            } else if is_makefile_target(&line) {
+            } else if is_makefile_target(&line) { // Start of a rule definition
                 in_command_block = false;
                 let (rule, deps) = match line.split_once(':') {
                     Some((r, d)) => (r.trim(), d.trim()),
-                    None => return Err(MakeError::MissingSeparator)
+                    None => return Err(MakeError::MissingSeparator(line_num))
                 };
 
                 rdg.add_rule(rule);
@@ -105,7 +104,7 @@ impl MakefileParser {
 
                 current_rule = rdg.get_rule_mut(rule);
             } else {
-                return Err(MakeError::MissingSeparator);
+                return Err(MakeError::MissingSeparator(line_num));
             }
         }
 

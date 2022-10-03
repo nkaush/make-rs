@@ -1,5 +1,4 @@
-#[derive(Default)]
-
+#[derive(Default, Copy, Clone)]
 pub enum RuleState {
     #[default]
     NotStarted,

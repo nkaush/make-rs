@@ -17,4 +17,3 @@ codegen-units = 1
 [dependencies]
 tsq = { git = "https://github.com/nkaush/thread-safe-queue" }
 clap = { version = "4", features = ["derive"] }
-petgraph = "0.6"
