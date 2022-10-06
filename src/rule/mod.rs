@@ -1,5 +1,7 @@
 mod state;
+mod builder;
 pub use state::*;
+pub use builder::*;
 
 #[derive(Default)]
 pub struct Rule {
@@ -9,23 +11,15 @@ pub struct Rule {
 }
 
 impl Rule {
-    pub fn new(target: &str) -> Self {
+    pub(in crate::rule) fn new(target: String, commands: Vec<String>) -> Self {
         Self {
-            target: target.into(),
-            commands: Vec::new(),
+            target,
+            commands,
             rule_state: RuleState::NotStarted
         }
     }
 
-    pub fn reset(&mut self) {
-        self.commands.clear();
-    }
-
-    pub fn add_command(&mut self, command: String) {
-        self.commands.push(command);
-    }
-
-    pub fn get_target(&self) -> &String {
+    pub fn get_target(&self) -> &str {
         &self.target
     }
 
