@@ -3,7 +3,7 @@ mod builder;
 pub use state::*;
 pub use builder::*;
 
-#[derive(Default)]
+#[derive(Debug, Default, Hash, PartialEq, Eq)]
 pub struct Rule {
     target: String,
     commands: Vec<String>,

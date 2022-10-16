@@ -154,3 +154,55 @@ impl MakefileParser {
         Ok(DependencyGraph::new(rules, dependencies))
     }
 }
+
+#[cfg(test)] 
+mod test {
+    use super::*; 
+    
+    fn parse_rdg(path: &PathBuf, goals: &mut Vec<String>) -> Result<DependencyGraph, MakeError> {
+        let mut parser = MakefileParser::new(&path)?;
+        parser.parse(goals)
+    }
+
+    #[test]
+    fn test_parse_valid_existing_makefile() {
+        let path = PathBuf::from("./test_makefiles/testfile1");
+        let mut goals = Vec::new();
+
+        let rdg = parse_rdg(&path, &mut goals);
+        assert!(rdg.is_ok());
+    }
+
+    #[test]
+    fn test_parse_invalid_existing_makefile() {
+        let path = PathBuf::from("./nonexistant/makefile");
+        let mut goals = Vec::new();
+
+        let rdg = parse_rdg(&path, &mut goals);
+        assert!(rdg.is_err());
+        assert_eq!(rdg.unwrap_err().reason(), "MakefileDoesNotExist");
+    }
+
+    /// @todo more tests for invalid makefiles...
+    
+    #[test]
+    fn test_check_cyclic_makefile_has_cycle() {
+        let path = PathBuf::from("./test_makefiles/testfile8");
+        let parser = MakefileParser::new(&path);
+
+        assert!(parser.is_ok()); // check that opening file is ok...
+        let mut parser = parser.unwrap();
+
+        let mut goals = Vec::new();
+        let rdg = parser.parse(&mut goals);
+        assert!(rdg.is_ok()); // check that parsing succeeded...
+
+        // check that the make with no goals runs the first rule...
+        assert_eq!(goals, vec!["all"]); 
+
+        let rdg = rdg.unwrap();
+        let mut ordered = Vec::new();
+        assert!(rdg.is_cyclic("", &mut ordered));
+        assert_eq!(ordered, vec!["", "all", "c", "d", "a"]); 
+    }
+}

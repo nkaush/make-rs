@@ -1,19 +1,7 @@
-use std::collections::{HashMap, HashSet, hash_map::Values};
-use thiserror::Error;
+use std::collections::{HashMap, HashSet, hash_map::Values, VecDeque};
 use crate::Rule;
 
-#[derive(Debug, Error)]
-#[error("Invalid target '{target}'")]
-pub struct InvalidTargetError {
-    target: String
-}
-
-impl InvalidTargetError {
-    fn from_target(target: &str) -> Self {
-        Self { target: target.into() }
-    }
-}
-
+#[derive(Debug)]
 pub struct DependencyGraph {
     rules: HashMap<String, Rule>,
     dependencies: HashMap<String, Vec<String>>
@@ -26,24 +14,6 @@ impl DependencyGraph {
             dependencies
         }
     }
-
-    // pub fn add_rule(&mut self, rule: Rule) {
-    //     let target: String = rule.get_target().into();
-    //     self.rules.insert(target.clone(), rule);
-    //     self.dependencies.insert(target, Vec::new());
-    // }
-
-    // pub fn add_dependency(&mut self, parent: &str, child: &str) -> Result<(), InvalidTargetError> {
-    //     let contains_parent = self.rules.contains_key(parent);
-    //     let contains_child = self.rules.contains_key(child);
-    //     if contains_parent && contains_child {
-    //         Ok(self.dependencies.get_mut(parent).unwrap().push(child.into()))
-    //     } else if !contains_parent {
-    //         Err(InvalidTargetError::from_target(parent))
-    //     } else {
-    //         Err(InvalidTargetError::from_target(child))
-    //     }
-    // }
 
     pub fn get_rule_mut(&mut self, rule_name: &str) -> Option<&mut Rule> {
         self.rules.get_mut(rule_name)
@@ -69,15 +39,26 @@ impl DependencyGraph {
             .unwrap()
     }
 
-    fn is_cyclic_helper(&self, ordered_nodes: &mut Vec<&Rule>, discovered: &mut HashSet<&Rule>, finished: &mut HashSet<&Rule>, target: &str) -> bool {
+    pub fn is_cyclic(&self, target: &str, ordered: &mut Vec<String>) -> bool {
+        let mut visited: HashSet<&String> = HashSet::new();
+        let mut stack = VecDeque::new();
+        stack.push_back(target);
+
+        while let Some(curr) = stack.pop_back() {
+            println!("visiting {curr:?}");
+            ordered.push(curr.into());
+            for dep in self.dependencies.get(curr).unwrap() {
+                println!("at dep {dep:?}");
+                if !visited.contains(dep) {
+                    visited.insert(dep);
+                    stack.push_back(dep);
+                } else {
+                    ordered.push(dep.into());
+                    return true;
+                }
+            }
+        }
+
         false
-    }
-
-    pub fn is_cyclic(&self, target: &str) -> bool {
-        let mut ordered_nodes = Vec::new();
-        let mut discovered = HashSet::new();
-        let mut finished = HashSet::new();
-
-        self.is_cyclic_helper(&mut ordered_nodes, &mut discovered, &mut finished, target)
     }
 }
